@@ -5,12 +5,10 @@ export class GridOptions {
         tileSizeX = 50,
         tileSizeY = 50,
         tileColor = "grey",
-        tileHighlightColor = "yellow"
     ) {
         this.tileSizeX = tileSizeX;
         this.tileSizeY = tileSizeY;
         this.tileColor = tileColor;
-        this.tileHighlightColor = tileHighlightColor;
     }
 }
 
@@ -23,22 +21,22 @@ export class Grid {
     constructor(height, width, options = null) {
         this.height = height;
         this.width = width;
+        this.options = options ?? new GridOptions();
 
         this.root = document.createElement("div");
         this.tiles = ArrayUtils.createMatrix(height, width);
         this.highlightEnabled = true;
 
-        if (options == null) options = new GridOptions();
         this.root.style.display = "grid";
-        this.root.style.gridTemplateRows = `repeat(${height}, ${options.tileSizeY}px)`;
-        this.root.style.gridTemplateColumns = `repeat(${width}, ${options.tileSizeX}px)`;
+        this.root.style.gridTemplateRows = `repeat(${height}, ${this.options.tileSizeY}px)`;
+        this.root.style.gridTemplateColumns = `repeat(${width}, ${this.options.tileSizeX}px)`;
 
         for (let i = 0; i < height; i++) {
             for (let j = 0; j < width; j++) {
                 let tile = document.createElement("div");
                 tile.dataset.x = j;
                 tile.dataset.y = i;
-                tile.style.backgroundColor = options.tileColor;
+                tile.style.backgroundColor = this.options.tileColor;
                 tile.style.border = "1px solid black";
                 this.root.appendChild(tile);
                 this.tiles[i][j] = tile;
