@@ -38,6 +38,7 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
             this._closed = new Set();
             this._start = null;
             this._end = null;
+            this._drawDelay = 3;
             this._paintTime = 0;
             this._timeouts = new Array();
         }
@@ -78,6 +79,17 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
             this._paint(x, y, color);
         }
 
+        /**
+         * @param {Array<Array<boolean>>} map 
+         */
+        setObstacles(map) {
+            for (let i = 0; i < map.height; i++) {
+                for (let j = 0; j < map.width; j++) {
+                    if (map[i][j]) this._nodes[i][j].isObstacle = map[i][j];
+                }
+            }
+        }
+
         setSpeed(value) { this._speed = value; }
 
         start() {
@@ -94,7 +106,7 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
             while (this._open.length > 0) {
                 let current = this._open.shift();
                 this._closed.add(current);
-                this._paintQueue(current.x, current.y, "cyan", 15);
+                this._paintQueue(current.x, current.y, "cyan");
                 if (current == this._end) {
                     endIsReached = true;
                     break;
@@ -103,7 +115,7 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
                 let neighbours = this._getNeighbours(current.x, current.y);
                 for (const next of neighbours) {
 
-                    this._paintQueue(next.x, next.y, "orange", 15);
+                    this._paintQueue(next.x, next.y, "orange");
                     let gCost = current.gCost + this._distance(current.x, current.y, next.x, next.y);
                     if (next.parent == null) {
                         next.gCost = gCost;
@@ -119,15 +131,15 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
                     }
                 }
 
-                this._paintQueue(current.x, current.y, "white", 15);
+                this._paintQueue(current.x, current.y, "white");
             }
 
             if (endIsReached) {
                 let current = this._end;
-                this._paintQueue(current.x, current.y, "#22ff00", 15);
+                this._paintQueue(current.x, current.y, "#22ff00");
                 while (current != this._start) {
                     current = current.parent;
-                    this._paintQueue(current.x, current.y, "#22ff00", 15);
+                    this._paintQueue(current.x, current.y, "#22ff00");
                 }
             }
         }
@@ -167,7 +179,7 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
         _getNeighbours(x, y) {
             let result = new Array();
 
-            if (y + 1 < this.height - 1) {
+            if (y + 1 < this.height) {
                 let node = this._nodes[y + 1][x];
                 if (!node.isObstacle && !this._closed.has(node)) {
                     result.push(node);
@@ -195,7 +207,7 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
                 }
             }
 
-            if (y + 1 < this.height - 1 && x + 1 < this.width) {
+            if (y + 1 < this.height && x + 1 < this.width) {
                 let node = this._nodes[y + 1][x + 1];
                 if (!node.isObstacle && !this._closed.has(node)) {
                     result.push(node);
@@ -216,7 +228,7 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
                 }
             }
 
-            if (y + 1 < this.height - 1 && x - 1 >= 0) {
+            if (y + 1 < this.height && x - 1 >= 0) {
                 let node = this._nodes[y + 1][x - 1];
                 if (!node.isObstacle && !this._closed.has(node)) {
                     result.push(node);
@@ -226,8 +238,8 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
             return result;
         }
 
-        _paintQueue(x, y, color, ms) {
-            this._paintTime += ms;
+        _paintQueue(x, y, color) {
+            this._paintTime += this._drawDelay;
             let id = setTimeout(() => this.grid.tiles[y][x].style.backgroundColor = color, this._paintTime);
             this._timeouts.push(id);
         }
@@ -281,7 +293,7 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
     let startButton = document.querySelector(".start-btn");
     startButton.addEventListener("click", () => {
         pathfinder.setStart(0, 0);
-        pathfinder.setEnd(16, 16);
+        pathfinder.setEnd(31, 31);
         pathfinder.start();
     });
 }
