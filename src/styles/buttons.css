@@ -1,0 +1,21 @@
+.start-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #4CAF50;
+    color: white;
+    filter: drop-shadow(0 0 2px black);
+    border: 2px solid black;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.start-btn:hover {
+    background-color: #3f8242;
+}
+
+.start-btn:active {
+    background-color: #263e26;
+}
