@@ -15,55 +15,239 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
         }
 
         fCost() { return this.gCost + this.hCost };
-
-        reset() {
-            this.gCost = 0;
-            this.hCost = 0;
-            this.parent = null;
-        }
     }
 
-    class Pathfinder {
-        constructor(height, width) {
-            this.height = height;
-            this.width = width;
-            this.nodes = ArrayUtils.createMatrix(height, width, new Node());
-            for (let i = 0; i < height; i++) {
-                for (let j = 0; j < width; j++) {
-                    this.nodes[i][j] = new Node(j, i);
+    class PathfindingVisualization {
+        /**
+         * @param {Grid} grid 
+         */
+        constructor(grid) {
+            this.grid = grid;
+            this.height = grid.height;
+            this.width = grid.width;
+
+            this._nodes = ArrayUtils.createMatrix(this.height, this.width);
+            for (let i = 0; i < this.height; i++) {
+                for (let j = 0; j < this.width; j++) {
+                    this._nodes[i][j] = new Node(j, i);
                 }
             }
 
-            this.speed = 1;
-            this.open = new Array();
-            this.closed = new Set();
-            this.start = null;
-            this.end = null;
+            this._speed = 1;
+            this._open = new Array();
+            this._closed = new Set();
+            this._start = null;
+            this._end = null;
+            this._paintTime = 0;
+            this._timeouts = new Array();
         }
 
-        // reset() {
-        //     this.closed.forEach((value) => )
-        //     for (let i = 0; i < this.closed.size; i++) {
-        //         Set
+        setStart(x, y) {
+            let oldColor = this.grid.options.tileColor;
+            let newColor = "blue";
+            if (this._start != null) {
+                let oldX = this._start.x;
+                let oldY = this._start.y;
+                this.grid.tiles[oldY][oldX].style.backgroundColor = oldColor;
+            }
 
-        //     }
-        // }
-
-        find() {
-
+            this._start = this._nodes[y][x];
+            this.grid.tiles[y][x].style.backgroundColor = newColor;
         }
-    }
 
-    class MazeFactory
-    {
-        
+        setEnd(x, y) {
+            let oldColor = this.grid.options.tileColor;
+            let newColor = "blue";
+            if (this._end != null) {
+                let oldX = this._end.x;
+                let oldY = this._end.y;
+                this._paint(x, y, newColor);
+                this.grid.tiles[oldY][oldX].style.backgroundColor = oldColor;
+            }
+
+            this._end = this._nodes[y][x];
+            this._paint(x, y, newColor);
+        }
+
+        isObstacle(x, y) { return this._nodes[y][x].isObstacle; }
+
+        setObstacle(x, y, state) {
+            let color = this.grid.options.tileColor;
+            if (state) color = "black";
+            this._nodes[y][x].isObstacle = state;
+            this._paint(x, y, color);
+        }
+
+        setSpeed(value) { this._speed = value; }
+
+        start() {
+            this._reset();
+            if (this._start == this._end) {
+                let x = this._start.x;
+                let y = this._start.y;
+                this._paint(x, y, "cyan");
+                return;
+            }
+
+            this._open.push(this._start);
+            let endIsReached = false;
+            while (this._open.length > 0) {
+                let current = this._open.shift();
+                this._closed.add(current);
+                this._paintQueue(current.x, current.y, "cyan", 15);
+                if (current == this._end) {
+                    endIsReached = true;
+                    break;
+                }
+
+                let neighbours = this._getNeighbours(current.x, current.y);
+                for (const next of neighbours) {
+
+                    this._paintQueue(next.x, next.y, "orange", 15);
+                    let gCost = current.gCost + this._distance(current.x, current.y, next.x, next.y);
+                    if (next.parent == null) {
+                        next.gCost = gCost;
+                        next.hCost = this._distance(next.x, next.y, this._end.x, this._end.y);
+                        next.parent = current;
+                        this._open.push(next);
+                        this._open.sort((a, b) => a.fCost() - b.fCost());
+                    }
+                    else if (gCost < next.gCost) {
+                        next.gCost = gCost;
+                        next.parent = current;
+                        this._open.sort((a, b) => a.fCost() - b.fCost());
+                    }
+                }
+
+                this._paintQueue(current.x, current.y, "white", 15);
+            }
+
+            if (endIsReached) {
+                let current = this._end;
+                this._paintQueue(current.x, current.y, "#22ff00", 15);
+                while (current != this._start) {
+                    current = current.parent;
+                    this._paintQueue(current.x, current.y, "#22ff00", 15);
+                }
+            }
+        }
+
+        _reset() {
+            for (const item of this._open) {
+                this._resetNode(item);
+                if (item.isObstacle) this._paint(item.x, item.y, "black");
+                else this._paint(item.x, item.y, this.grid.options.tileColor);
+            }
+
+            for (const item of this._closed) {
+                this._resetNode(item);
+                if (item.isObstacle) this._paint(item.x, item.y, "black");
+                else this._paint(item.x, item.y, this.grid.options.tileColor);
+            }
+
+            for (let i = 0; i < this._timeouts.length; i++) {
+                clearTimeout(this._timeouts[i]);
+            }
+
+            this._paint(this._start.x, this._start.y, "green");
+            this._paint(this._end.x, this._end.y, "green");
+
+            this._open = new Array();
+            this._closed = new Set();
+            this._paintTime = 0;
+            this._timeouts = new Array();
+        }
+
+        _resetNode(node) {
+            node.gCost = 0;
+            node.hCost = 0;
+            node.parent = null;
+        }
+
+        _getNeighbours(x, y) {
+            let result = new Array();
+
+            if (y + 1 < this.height - 1) {
+                let node = this._nodes[y + 1][x];
+                if (!node.isObstacle && !this._closed.has(node)) {
+                    result.push(node);
+                }
+            }
+
+            if (y - 1 >= 0) {
+                let node = this._nodes[y - 1][x];
+                if (!node.isObstacle && !this._closed.has(node)) {
+                    result.push(node);
+                }
+            }
+
+            if (x + 1 < this.width - 1) {
+                let node = this._nodes[y][x + 1];
+                if (!node.isObstacle && !this._closed.has(node)) {
+                    result.push(node);
+                }
+            }
+
+            if (x - 1 >= 0) {
+                let node = this._nodes[y][x - 1];
+                if (!node.isObstacle && !this._closed.has(node)) {
+                    result.push(node);
+                }
+            }
+
+            if (y + 1 < this.height - 1 && x + 1 < this.width) {
+                let node = this._nodes[y + 1][x + 1];
+                if (!node.isObstacle && !this._closed.has(node)) {
+                    result.push(node);
+                }
+            }
+
+            if (y - 1 >= 0 && x + 1 < this.width) {
+                let node = this._nodes[y - 1][x + 1];
+                if (!node.isObstacle && !this._closed.has(node)) {
+                    result.push(node);
+                }
+            }
+
+            if (y - 1 >= 0 && x - 1 >= 0) {
+                let node = this._nodes[y - 1][x - 1];
+                if (!node.isObstacle && !this._closed.has(node)) {
+                    result.push(node);
+                }
+            }
+
+            if (y + 1 < this.height - 1 && x - 1 >= 0) {
+                let node = this._nodes[y + 1][x - 1];
+                if (!node.isObstacle && !this._closed.has(node)) {
+                    result.push(node);
+                }
+            }
+
+            return result;
+        }
+
+        _paintQueue(x, y, color, ms) {
+            this._paintTime += ms;
+            let id = setTimeout(() => this.grid.tiles[y][x].style.backgroundColor = color, this._paintTime);
+            this._timeouts.push(id);
+        }
+
+        _paint(x, y, color) {
+            this.grid.tiles[y][x].style.backgroundColor = color;
+        }
+
+        _distance(x1, y1, x2, y2) {
+            let dx = x2 - x1;
+            let dy = y2 - y1;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
     }
 
     /* --------------------------------- script --------------------------------- */
     let menuContainer = document.querySelector("[menu-container]");
     let gridContainer = document.querySelector("[grid-container]");
 
-    let coursorMode = 0;
+    let cursorMode = 0;
     document.addEventListener("dragstart", (e) => e.preventDefault());
 
     let height = 32;
@@ -77,28 +261,27 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
     gridContainer.appendChild(grid.root);
 
     let gridHighlight = new GridHighlight(grid);
-    let pathfinder = new Pathfinder(height, width);
+    let pathfinder = new PathfindingVisualization(grid);
 
     for (let i = 0; i < grid.height; i++) {
         for (let j = 0; j < grid.width; j++) {
             let tile = grid.tiles[i][j];
 
             tile.addEventListener("mousedown", () => {
-                if (coursorMode == 0) {
-                    let isObstacle = pathfinder.nodes[i][j].isObstacle;
-                    if (isObstacle) tile.style.backgroundColor = options.tileColor;
-                    else tile.style.backgroundColor = "black";
-                    pathfinder.nodes[i][j].isObstacle = !isObstacle;
+                if (cursorMode == 0) {
+                    if (pathfinder.isObstacle(j, i)) pathfinder.setObstacle(j, i, false);
+                    else pathfinder.setObstacle(j, i, true);
                 }
-                else if (coursorMode == 1) {
-                    if (pathfinder.start != null) {
-                        let node = pathfinder.start;
-                        grid.getTile(node.y, node.x).style.backgroundColor = options.tileColor;
-                        grid.getTile(i, j).style.backgroundColor = "green";
-                    }
-                    pathfinder.start = pathfinder.nodes[i][j];
-                }
+                else if (cursorMode == 1) pathfinder.setStart(j, i);
+                else if (cursorMode == 2) pathfinder.setEnd(j, i);
             });
         }
     }
+
+    let startButton = document.querySelector(".start-btn");
+    startButton.addEventListener("click", () => {
+        pathfinder.setStart(0, 0);
+        pathfinder.setEnd(16, 16);
+        pathfinder.start();
+    });
 }
