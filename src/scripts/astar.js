@@ -1,6 +1,7 @@
 import { ArrayUtils } from "../common/array-utils.js";
 import { Grid, GridOptions } from "../common/grid.js";
 import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js";
+import { MazeFactory } from "../common/maze-factory.js";
 
 {
     /* ---------------------------------- types --------------------------------- */
@@ -82,10 +83,10 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
         /**
          * @param {Array<Array<boolean>>} map 
          */
-        setObstacles(map) {
-            for (let i = 0; i < map.height; i++) {
-                for (let j = 0; j < map.width; j++) {
-                    if (map[i][j]) this._nodes[i][j].isObstacle = map[i][j];
+        setObstacles(map, height, width) {
+            for (let i = 0; i < height; i++) {
+                for (let j = 0; j < width; j++) {
+                    this.setObstacle(j, i, map[i][j]);
                 }
             }
         }
@@ -262,12 +263,12 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
     let cursorMode = 0;
     document.addEventListener("dragstart", (e) => e.preventDefault());
 
-    let height = 32;
-    let width = 32;
+    let height = 64;
+    let width = 64;
 
     let options = new GridOptions();
-    options.tileSizeX = 20;
-    options.tileSizeY = 20;
+    options.tileSizeX = 10;
+    options.tileSizeY = 10;
 
     let grid = new Grid(height, width, options);
     gridContainer.appendChild(grid.root);
@@ -293,7 +294,11 @@ import { GridHighlight, GridHighlightOptions } from "../common/grid-highlight.js
     let startButton = document.querySelector(".start-btn");
     startButton.addEventListener("click", () => {
         pathfinder.setStart(0, 0);
-        pathfinder.setEnd(31, 31);
+        pathfinder.setEnd(width - 1, height - 1);
         pathfinder.start();
     });
+
+    let maze = new MazeFactory(height, width).result;
+    console.log(maze);
+    pathfinder.setObstacles(maze, height, width);
 }
