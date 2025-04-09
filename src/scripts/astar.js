@@ -39,7 +39,7 @@ import { MazeFactory } from "../common/maze-factory.js";
             this._closed = new Set();
             this._start = null;
             this._end = null;
-            this._drawDelay = 3;
+            this._drawDelay = 1;
             this._paintTime = 0;
             this._timeouts = new Array();
         }
@@ -299,6 +299,5 @@ import { MazeFactory } from "../common/maze-factory.js";
     });
 
     let maze = new MazeFactory(height, width).result;
-    console.log(maze);
     pathfinder.setObstacles(maze, height, width);
 }
