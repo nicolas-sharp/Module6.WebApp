@@ -13,5 +13,11 @@ export const ArrayUtils =
             }
         }
         return result;
-    }
+    },
+
+    /**
+     * @param {Array} array 
+     * @returns
+     */
+    getRandom(array) { return array[Math.floor(Math.random() * array.length)]; }
 }
