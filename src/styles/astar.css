@@ -1,0 +1,87 @@
+.start-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #4CAF50;
+    color: white;
+    filter: drop-shadow(0 0 2px black);
+    border: 2px solid black;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.start-btn:hover {
+    background-color: #3f8242;
+}
+
+.start-btn:active {
+    background-color: #1e1e1e;
+}
+
+.build-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #626262;
+    color: white;
+    filter: drop-shadow(0 0 2px black);
+    border: 2px solid black;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.build-btn:hover {
+    background-color: #444444;
+}
+
+.build-btn:active {
+    background-color: #1e1e1e;
+}
+
+.set-start-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #626262;
+    color: white;
+    filter: drop-shadow(0 0 2px black);
+    border: 2px solid black;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.set-start-btn:hover {
+    background-color: #444444;
+}
+
+.set-start-btn:active {
+    background-color: #1e1e1e;
+}
+
+.set-end-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #626262;
+    color: white;
+    filter: drop-shadow(0 0 2px black);
+    border: 2px solid black;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.set-end-btn:hover {
+    background-color: #444444;
+}
+
+.set-end-btn:active {
+    background-color: #1e1e1e;
+}

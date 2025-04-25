@@ -293,9 +293,27 @@ import { MazeFactory } from "../common/maze-factory.js";
 
     let startButton = document.querySelector(".start-btn");
     startButton.addEventListener("click", () => {
-        pathfinder.setStart(0, 0);
-        pathfinder.setEnd(width - 1, height - 1);
+        // pathfinder.setStart(0, 0);
+        // pathfinder.setEnd(width - 1, height - 1);
         pathfinder.start();
+    });
+
+    let buildButton = document.querySelector(".build-btn");
+    buildButton.addEventListener("click", () => {
+        cursorMode = 0;
+        console.log("cursor mode changed to " + cursorMode);
+    });
+
+    let setStartButton = document.querySelector(".set-start-btn");
+    setStartButton.addEventListener("click", () => {
+        cursorMode = 1;
+        console.log("cursor mode changed to " + cursorMode);
+    });
+
+    let setEndButton = document.querySelector(".set-end-btn");
+    setEndButton.addEventListener("click", () => {
+        cursorMode = 2;
+        console.log("cursor mode changed to " + cursorMode);
     });
 
     let maze = new MazeFactory(height, width).result;
